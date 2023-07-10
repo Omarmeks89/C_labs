@@ -4,21 +4,6 @@
 
 #include "ex_01_types.h"
 
-enum io_buffers {
-	STDIN = 0,
-	STDOUT = 1,
-	STDERR = 2,
-} t_io_buffers;
-
-enum ex_codes {
-	S_DONE = 0,
-	E_ERROPEN = 1,
-	E_ERRCLOSE = 2,
-	E_ERREAD = 3,
-	E_ERRWRITE = 4,
-	E_ERRCREAT = 5,
-} err_codes;
-
 int main()
 {
     /* func, that repr pipe creation. */
