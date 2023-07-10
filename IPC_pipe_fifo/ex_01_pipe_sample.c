@@ -7,6 +7,7 @@
 enum io_buffers {
 	STDIN = 0,
 	STDOUT = 1,
+	STDERR = 2,
 } t_io_buffers;
 
 enum ex_codes {
