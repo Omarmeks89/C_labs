@@ -59,5 +59,6 @@ int main()
     		printf("Can`t detach shmem. %s\n", strerror(errno));
         	return S_IPCFDUMP;
         }
+        shmctl(shmid, IPC_RMID, NULL);
         return S_DONE;
 }
