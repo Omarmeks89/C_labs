@@ -4,6 +4,7 @@
 # include <stdio.h>
 
 # define CALC_ITEM_SIZE(T) (sizeof(T))
+# define CALC_FEW_ITEMS_SIZE(TYPE, CNT) (CALC_ITEM_SIZE(TYPE) * CNT)
 
 typedef int pipe_fd[2];
 
