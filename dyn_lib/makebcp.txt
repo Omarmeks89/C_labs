@@ -1,0 +1,16 @@
+build: dyn_c_test dyn_cpp_test
+
+dyn_c_test: main.c solution.h libsolution
+	gcc -Wall -g main.c -L. -lsolution -o dyn_c_test
+
+dyn_cpp_test: cpp_main.cpp solution.h libsolution
+	gcc -Wall -g cpp_main.cpp -L. -lsolution -o dyn_cpp_test
+
+libsolution: solution.c solution.h
+	gcc -Wall -g -o libsolution.so -shared -fPIC solution.c
+
+ld_path:
+	export LD_LIBRARY_PATH=.
+
+clear:
+	rm dyn_cpp_test dyn_c_test libsolution.so 2>> rmerr.txt

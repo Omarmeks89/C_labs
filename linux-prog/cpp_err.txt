@@ -1,0 +1,3 @@
+/usr/bin/ld: /tmp/ccGeQZOP.o: в функции «main»:
+/home/egor_usual/C/linux-prog/hello.cpp:8: неопределённая ссылка на «print_greet(char const*)»
+collect2: error: ld returned 1 exit status
