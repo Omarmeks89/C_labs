@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include "simple_stat.h"
+
 /* max array size */
 #define MAX_ARRAY_SIZE 1048575
 
