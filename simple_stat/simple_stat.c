@@ -1,45 +1,84 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "simple_stat.h"
+/* add -lm compilation flag */
+#include <math.h>
+#include <float.h>
 
 /* max array size */
 #define MAX_ARRAY_SIZE 1048575
 
-#define UINT32_MAX 4294967295
 #define INT32_MAX 2147483647
 #define INT32_MIN -2147483648
 
-static inline int
-abs_(int x) {
-    return x > 0 ? x : -x;
+enum status {
+    SUCCESS = 0,
+    NOITER,
+    NOTABS,
+    GOTOVF,
+    NULADR,
+    INVDIM,
+    NALLOC,
+    NEQUAL,
+} s_status;
+
+static int
+abs_(int x, int *res) {
+    
+    if (res == NULL) 
+        return NULADR;
+    
+    if (x == INT32_MIN)
+        return GOTOVF;
+        
+    *res = x > 0 ? x : -x;
+    return 0;
+}
+
+static int
+abs_double(double x, double *res) {
+    if (res == NULL) 
+        return NULADR;
+
+    *res = fabs(x);
+    return SUCCESS;
 }
 
 /* will calculate average from array of
  * int as absolute values.
- * Is working with values in between (0, 4294967295).
+ * Is working with values in between (0, 2147483647).
  *
  * Params:
  *      int *values: array of values;
  *      int size: size of array (will use control value).
  * Returns:
  *      double: abs average. */
-double
-abs_average(int values[], int size) {
-    unsigned int sum = 0, i = 0, abs_value = 0;
+int
+abs_average(int values[], int size, double *abs_avg) {
+    int sum = 0, i = 0, abs_value = 0, st = 0;
 
-    for (i = 0; (i < size && i < MAX_ARRAY_SIZE); i++) {
-        abs_value = (unsigned int) abs_(values[i]);
-        if ((UINT32_MAX - sum) < abs_value) {
-            abort();
-        }
+    if (abs_avg == NULL)
+        return NULADR;
+
+    if ((size <= 0) || (size > MAX_ARRAY_SIZE))
+        return INVDIM;
+
+    for (i = 0; i < size; i++) {
+        st = abs_(values[i], &abs_value);
+        if (st != SUCCESS)
+            return NOTABS;
+
+        if ((INT32_MAX - sum) < abs_value)
+            return GOTOVF;
 
         sum += abs_value;
     }
 
     if (i == 0)
-        abort();
-    return ((double)sum / (double)i); 
+        return NOITER;
+
+    *abs_avg = ((double)sum / (double)i); 
+    return SUCCESS;
 }
 
 /* will calculate average from array of
@@ -52,59 +91,185 @@ abs_average(int values[], int size) {
  *      int size: size of array (will use control value).
  * Returns:
  *      double: average. */
-double
-average(int values[], int size) {
+int
+average(int values[], int size, double *avg) {
     int sum = 0, i = 0, value = 0;
 
-    for (i = 0; (i < size && i < MAX_ARRAY_SIZE); i++) {
+    if (avg == NULL)
+        return NULADR;
+
+    if ((size <= 0) || (size > MAX_ARRAY_SIZE))
+        return INVDIM;
+
+    for (i = 0; i < size; i++) {
         value = values[i];
         if ((sum < 0) && (value < 0)) {
 
             if ((sum + value) > 0)
-                abort();
+                return GOTOVF;
 
         }
 
         if ((sum > 0) && (value > 0)) {
             if ((sum + value) < 0)
-                abort();
+                return GOTOVF;
         }
 
         sum += value;
     }
 
     if (i == 0)
-        abort();
-    return (double)sum / (double)i; 
+        return NOITER;
+
+    *avg = (double)sum / (double)i; 
+    return SUCCESS;
 }
 
-double
-median(int values[], int size, int (*fnc)(const void*, const void*)) {
-    int mid = 0, _a_size = 0;
+static int
+arraycp(int dest[], const int src[], int size) {
+    int i = 0;
+
+    if ((src == NULL) || (dest == NULL))
+        return NULADR;
+
+    if (size <= 0)
+        return INVDIM;
+
+    for (i = 0; i < size; i++) {
+        dest[i] = src[i];
+    }
+
+    return i + 1;
+}
+
+static int
+abs_arraycp(int dest[], const int src[], int size) {
+    int i = 0, tmp = 0, st = 0;
+
+    if ((src == NULL) || (dest == NULL))
+        return NULADR;
+
+    if (size <= 0)
+        return INVDIM;
+
+    for (i = 0; i < size; i++) {
+        st = abs_(src[i], &tmp);
+
+        if (st != 0)
+            return NOTABS;
+
+        dest[i] = tmp;
+    }
+
+    return i + 1;
+}
+
+int
+median(const int values[], int size, double *median_v, int (*fnc)(const void*, const void*)) {
+    int mid = 0, copied = 0, res = 0;
+    int *arr_copy;
 
     if (size <= 0) 
-        abort();
+        return INVDIM;
 
-    qsort(values, size, sizeof(values[0]), fnc);
+    arr_copy = (int *) malloc(size * sizeof(int));
+    if (arr_copy == NULL)
+        return NULADR;
+
+    copied = arraycp(arr_copy, values, size);
+    if (copied != size)
+        return NEQUAL;
+
+    qsort(arr_copy, size, sizeof(int), fnc);
 
     mid = size / 2;
     if (size % 2) {
-
         int _mid[2] = {values[mid], values[mid + 1]};
-        _a_size = sizeof(_mid) / sizeof(_mid[0]);
 
-        return average(_mid, _a_size);
+        res = average(_mid, 2, median_v);
+        if (res != SUCCESS)
+            return res;
+
+        free(arr_copy);
+        return SUCCESS;
     }
 
-    return (double) values[mid];
+    *median_v = (double) values[mid];
+    free(arr_copy);
+
+    return SUCCESS;
 }
 
-int *mode(int values[]) {
-    int *modes = NULL;
-    return modes;
+static inline int
+_abs_compare(const void *a, const void *b) {
+    return (*(int *)a - *(int *)b);
 }
 
-int median_amplitude(int values[]) {
-    return 0;
+int
+abs_median(const int values[], int size, double *median_v) {
+    int mid = 0, copied = 0, res = 0;
+    int *arr_copy;
+
+    if (size <= 0) 
+        return INVDIM;
+
+    arr_copy = (int *) malloc(size * sizeof(int));
+    if (arr_copy == NULL)
+        return NULADR;
+
+    copied = abs_arraycp(arr_copy, values, size);
+    if (copied != size)
+        return NEQUAL;
+
+    qsort(arr_copy, size, sizeof(int), _abs_compare);
+
+    mid = size / 2;
+    if (size % 2) {
+        int _mid[2] = {values[mid], values[mid + 1]};
+
+        res = abs_average(_mid, 2, median_v);
+        if (res != SUCCESS)
+            return res;
+
+        free(arr_copy);
+        return SUCCESS;
+    }
+
+    *median_v = (double) values[mid];
+    free(arr_copy);
+
+    return SUCCESS;
 }
 
+int
+dispersion(int values[], int size, double *dispn) {
+    double abs_avg = 0.0, total = 0.0, tmp = 0.0;
+    int res = 0, i = 0;
+
+    if ((size <= 0) || (size > MAX_ARRAY_SIZE))
+        return INVDIM;
+
+    if (dispn == NULL)
+        return NULADR;
+
+    res = abs_average(values, size, &abs_avg);
+    if (res != SUCCESS)
+        return res;
+
+    for (i = 0; i < size; i++) {
+        res = abs_double((double) values[i] - abs_avg, &tmp);
+        if (res != SUCCESS)
+            return res;
+
+        tmp = pow(tmp, 2);
+        if (fabs(DBL_MAX - total) < tmp)
+            return GOTOVF;
+
+        total += tmp;
+    }
+    if (i == 0)
+        return NOITER;
+
+    *dispn = total / (double) size;
+    return SUCCESS;
+}
