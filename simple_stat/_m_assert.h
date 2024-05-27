@@ -3,58 +3,54 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-/* __convert_tostr() will cast value into 
- * 'string' representaion for
- * next check */
-#define __convert_tostr(x) (#x)
+#define LINE() (__LINE__)
 
-#define __cast_to_int32(x) ((int)x)
-#define __cast_to_int64(x) ((long int)x)
-#define __cast_to_uint64(x) ((unsigned long)x)
+#define __eq_int32(a, b) ((int) a == (int) b)
 
-#define __reflect(x, _intptr) \
-    { \
-        char *_t = __convert_tostr(x); \
-        *_intptr = __get_value_type(_t); \
-    }
+#define __ne_int32(a, b) ((int) a != (int) b)
 
-int __get_value_type(const char *_t);
-int __assert_eq_int32(int a, int b);
+#define __eq_double64(a, b, eps) ((fabs((double) a - (double) b) <= (double) eps))
 
-/* use typedef -> bcs of platform depend type size */
-int __assert_eq_int64(long a, long b);
-int __assert_eq_uint64(unsigned long a, unsigned long b);
+#define __ne_double64(a, b, eps) ((fabs((double) a - (double) b) > (double) eps))
 
 /* ASSERT_EQ check that two args are equal
  * or will abort execution. */
-#define ASSERT_EQ(RES, EXP) \
+#define ASSERT_EQ_INT32(RES, EXP, LINE) \
     { \
-        int *_t_ptr; \
-        int _v = 1, success = 0; \
-        _t_ptr = &_v; \
-        __reflect(EXP, _t_ptr); \
-        switch *_t_ptr { \
-            case 0: \
-                    success = __assert_eq_int32(__cast_to_int32(RES), \
-                                                __cast_to_int32(EXP)); \
-                    break; \
-            case 1: \
-                    success = __assert_eq_int64(__cast_to_int64(RES), \
-                                                __cast_to_int64(EXP)); \
-                    break; \
-            case 2: \
-                    success = __assert_eq_uint64(__cast_to_uint64(RES), \
-                                                __cast_to_uint64(EXP)); \
-                    break; \
-            default: \
-                     printf("impossible type for '%s'\n", #EXP); \
-                    abort(); \
-        } \
+        int success = 0; \
+        success = __eq_int32(RES, EXP); \
         if (success) { \
-            printf("PASSED. [EXPECTED: %s, GOT: %s]\n", __convert_tostr(EXP), __convert_tostr(RES)); \
+            printf("(LINE: %6s) PASSED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
         } else { \
-            printf("FAILED. [EXPECTED: %s, GOT: %s]\n", __convert_tostr(EXP), __convert_tostr(RES)); \
+            printf("(LINE: %6s) FAILED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
+            abort(); \
+        } \
+    }
+
+/* will not abort() routine execution, only
+ * write to stderr about test failure or success. */
+#define EXPECT_EQ_INT32(RES, EXP, LINE) \
+    { \
+        int success = 0; \
+        success = __eq_int32(RES, EXP); \
+        if (success) { \
+            printf("(LINE: %6s) PASSED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
+        } else { \
+            printf("(LINE: %6s) FAILED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
+        } \
+    }
+
+/* assert to double */
+#define ASSERT_EQ_DBL(RES, EXP, EPSILON, LINE) \
+    { \
+        int success = 0; \
+        success = __eq_double64(RES, EXP, EPSILON); \
+        if (success) { \
+            printf("(LINE: %6s) PASSED. [EXPECTED: %.6lf, GOT: %.6lf]\n", LINE, EXP, RES); \
+        } else { \
+            printf("(LINE: %6s) FAILED. [EXPECTED: %.6lf, GOT: %.6lf]\n", LINE, EXP, RES); \
             abort(); \
         } \
     }

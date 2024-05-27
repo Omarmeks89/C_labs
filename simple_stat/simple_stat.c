@@ -5,22 +5,7 @@
 #include <math.h>
 #include <float.h>
 
-/* max array size */
-#define MAX_ARRAY_SIZE 1048575
-
-#define INT32_MAX 2147483647
-#define INT32_MIN -2147483648
-
-enum status {
-    SUCCESS = 0,
-    NOITER,
-    NOTABS,
-    GOTOVF,
-    NULADR,
-    INVDIM,
-    NALLOC,
-    NEQUAL,
-} s_status;
+#include "simple_stat.h"
 
 static int
 abs_(int x, int *res) {
@@ -33,15 +18,6 @@ abs_(int x, int *res) {
         
     *res = x > 0 ? x : -x;
     return 0;
-}
-
-static int
-abs_double(double x, double *res) {
-    if (res == NULL) 
-        return NULADR;
-
-    *res = fabs(x);
-    return SUCCESS;
 }
 
 /* will calculate average from array of
@@ -132,7 +108,7 @@ arraycp(int dest[], const int src[], int size) {
     if ((src == NULL) || (dest == NULL))
         return NULADR;
 
-    if (size <= 0)
+    if ((size <= 0) || (size > MAX_ARRAY_SIZE))
         return INVDIM;
 
     for (i = 0; i < size; i++) {
@@ -149,7 +125,7 @@ abs_arraycp(int dest[], const int src[], int size) {
     if ((src == NULL) || (dest == NULL))
         return NULADR;
 
-    if (size <= 0)
+    if ((size <= 0) || (size > MAX_ARRAY_SIZE))
         return INVDIM;
 
     for (i = 0; i < size; i++) {
@@ -169,7 +145,7 @@ median(const int values[], int size, double *median_v, int (*fnc)(const void*, c
     int mid = 0, copied = 0, res = 0;
     int *arr_copy;
 
-    if (size <= 0) 
+    if ((size <= 0) || (size > MAX_ARRAY_SIZE))
         return INVDIM;
 
     arr_copy = (int *) malloc(size * sizeof(int));
@@ -201,16 +177,16 @@ median(const int values[], int size, double *median_v, int (*fnc)(const void*, c
 }
 
 static inline int
-_abs_compare(const void *a, const void *b) {
+_abs_compare(const void * a, const void * b) {
     return (*(int *)a - *(int *)b);
 }
 
 int
-abs_median(const int values[], int size, double *median_v) {
+abs_median(const int values[], int size, double * median_v) {
     int mid = 0, copied = 0, res = 0;
     int *arr_copy;
 
-    if (size <= 0) 
+    if ((size <= 0) || (size > MAX_ARRAY_SIZE))
         return INVDIM;
 
     arr_copy = (int *) malloc(size * sizeof(int));
@@ -221,7 +197,7 @@ abs_median(const int values[], int size, double *median_v) {
     if (copied != size)
         return NEQUAL;
 
-    qsort(arr_copy, size, sizeof(int), _abs_compare);
+    qsort(arr_copy, size, sizeof(int), &_abs_compare);
 
     mid = size / 2;
     if (size % 2) {
@@ -257,10 +233,7 @@ dispersion(int values[], int size, double *dispn) {
         return res;
 
     for (i = 0; i < size; i++) {
-        res = abs_double((double) values[i] - abs_avg, &tmp);
-        if (res != SUCCESS)
-            return res;
-
+        tmp = fabs((double) values[i] - abs_avg);
         tmp = pow(tmp, 2);
         if (fabs(DBL_MAX - total) < tmp)
             return GOTOVF;
