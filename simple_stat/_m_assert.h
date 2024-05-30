@@ -22,9 +22,9 @@
         int success = 0; \
         success = __eq_int32(RES, EXP); \
         if (success) { \
-            printf("(LINE: %6s) PASSED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
+            printf("PASSED. [EXPECTED: %d, GOT: %d]\n", EXP, RES); \
         } else { \
-            printf("(LINE: %6s) FAILED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
+            printf("(LINE: %6d) FAILED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
             abort(); \
         } \
     }
@@ -36,9 +36,9 @@
         int success = 0; \
         success = __eq_int32(RES, EXP); \
         if (success) { \
-            printf("(LINE: %6s) PASSED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
+            printf("PASSED. [EXPECTED: %d, GOT: %d]\n", EXP, RES); \
         } else { \
-            printf("(LINE: %6s) FAILED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
+            printf("(LINE: %6d) FAILED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
         } \
     }
 
@@ -48,9 +48,9 @@
         int success = 0; \
         success = __eq_double64(RES, EXP, EPSILON); \
         if (success) { \
-            printf("(LINE: %6s) PASSED. [EXPECTED: %.6lf, GOT: %.6lf]\n", LINE, EXP, RES); \
+            printf("PASSED. [EXPECTED: %.6lf, GOT: %.6lf]\n", EXP, RES); \
         } else { \
-            printf("(LINE: %6s) FAILED. [EXPECTED: %.6lf, GOT: %.6lf]\n", LINE, EXP, RES); \
+            printf("(LINE: %6d) FAILED. [EXPECTED: %.6lf, GOT: %.6lf]\n", LINE, EXP, RES); \
             abort(); \
         } \
     }
