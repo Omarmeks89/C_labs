@@ -26,7 +26,7 @@
 
 /* special symbols and
  * formatting symbols */
-#define FNAME_OFFSET "%-16s"
+#define FNAME_OFFSET "%-32s"
 #define LINE_NO_FMT "%6d"
 #define TEST_STATUS_OFFSET "%32s"
 
@@ -54,6 +54,7 @@
  *   Joined literal with format directives. */
 #define _PASS_MSG(__type) (             \
         FNAME_OFFSET                    \
+        SINGLE_SPACE                    \
         SQR_BRACKET_OPEN                \
         EXPECTED                        \
         __type                          \
@@ -75,6 +76,7 @@
  *   Joined literal with format directives. */
 #define _FAIL_MSG(__type) (             \
         FNAME_OFFSET                    \
+        SINGLE_SPACE                    \
         RND_BRACKET_OPEN                \
         LINE_STR                        \
         LINE_NO_FMT                     \
@@ -127,43 +129,42 @@
 
 /* ASSERT_EQ check that two args are equal
  * or will abort execution. */
-#define ASSERT_EQ_INT32(RES, EXP, F_NAME, LINE) \
-    { \
-        int success = 0; \
-        success = __eq_int32(RES, EXP); \
-        if (success) { \
-            printf("%32s [EXPECTED: %d, GOT: %d] %16s.\n", #F_NAME, EXP, RES, PASSED); \
-            TEST_PASSED_MSG(INT32_FMT_TEMPL, F_NAME, EXP, RES); \
-        } else { \
-            printf("%32s (LINE: %6d) [EXPECTED: %d, GOT: %d] %16s.\n", #F_NAME, LINE, EXP, RES, FAILED); \
-            abort(); \
-        } \
+#define ASSERT_EQ_INT32(RES, EXP, F_NAME, LINE)                         \
+    {                                                                   \
+        int success = 0;                                                \
+        success = __eq_int32(RES, EXP);                                 \
+        if (success) {                                                  \
+            TEST_PASSED_MSG(INT32_FMT_TEMPL, F_NAME, EXP, RES);         \
+        } else {                                                        \
+            TEST_FAILED_MSG(INT32_FMT_TEMPL, F_NAME, LINE, EXP, RES);   \
+            abort();                                                    \
+        }                                                               \
     }
 
 /* will not abort() routine execution, only
  * write to stderr about test failure or success. */
-#define EXPECT_EQ_INT32(RES, EXP, LINE) \
-    { \
-        int success = 0; \
-        success = __eq_int32(RES, EXP); \
-        if (success) { \
-            printf("PASSED. [EXPECTED: %d, GOT: %d]\n", EXP, RES); \
-        } else { \
-            printf("(LINE: %6d) FAILED. [EXPECTED: %d, GOT: %d]\n", LINE, EXP, RES); \
-        } \
+#define EXPECT_EQ_INT32(RES, EXP, F_NAME, LINE)                         \
+    {                                                                   \
+        int success = 0;                                                \
+        success = __eq_int32(RES, EXP);                                 \
+        if (success) {                                                  \
+            TEST_PASSED_MSG(INT32_FMT_TEMPL, F_NAME, EXP, RES);         \
+        } else {                                                        \
+            TEST_FAILED_MSG(INT32_FMT_TEMPL, F_NAME, LINE, EXP, RES);   \
+        }                                                               \
     }
 
 /* assert to double */
-#define ASSERT_EQ_DBL(RES, EXP, EPSILON, LINE) \
-    { \
-        int success = 0; \
-        success = __eq_double64(RES, EXP, EPSILON); \
-        if (success) { \
-            printf("PASSED. [EXPECTED: %.6lf, GOT: %.6lf]\n", EXP, RES); \
-        } else { \
-            printf("(LINE: %6d) FAILED. [EXPECTED: %.6lf, GOT: %.6lf]\n", LINE, EXP, RES); \
-            abort(); \
-        } \
+#define ASSERT_EQ_DBL(RES, EXP, EPSILON, F_NAME, LINE)                  \
+    {                                                                   \
+        int success = 0;                                                \
+        success = __eq_double64(RES, EXP, EPSILON);                     \
+        if (success) {                                                  \
+            TEST_PASSED_MSG(DBL_FMT_TEMPL, F_NAME, EXP, RES);           \
+        } else {                                                        \
+            TEST_FAILED_MSG(DBL_FMT_TEMPL, F_NAME, LINE, EXP, RES);     \
+            abort();                                                    \
+        }                                                               \
     }
 
 #endif /* _M_ASSERT_H */
