@@ -14,7 +14,7 @@ enum status {
     INVDIM,
     NALLOC,
     NEQUAL,
-} s_status;
+};
 
 #define MAX_ARRAY_SIZE 1048575
 

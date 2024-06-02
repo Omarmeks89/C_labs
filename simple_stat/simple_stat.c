@@ -42,7 +42,7 @@ abs_average(int values[], int size, double *abs_avg) {
     for (i = 0; i < size; i++) {
         st = abs_(values[i], &abs_value);
         if (st != SUCCESS)
-            return NOTABS;
+            return st;
 
         if ((INT32_MAX - sum) < abs_value)
             return GOTOVF;
