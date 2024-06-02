@@ -14,6 +14,12 @@ int test_assert_ne_dbl_passed() {
     return 0;
 }
 
+int test_assert_ne_dbl_failed() {
+    double exp_ = 10.001, res = 10.00;
+    ASSERT_NE_DBL(res, exp_, DBL_e_2, test_assert_ne_dbl_failed, LINE());
+    return 1;
+}
+
 int test_expect_eq_dbl_passed() {
     double exp_ = 10.01, res = 10.01;
     int status = 0;
@@ -30,10 +36,17 @@ int test_expect_ne_dbl_passed() {
     return status;
 }
 
+int test_expect_ne_dbl_failed() {
+    double exp_ = 10.000001, res = 10.000000;
+    int status = 0;
+
+    EXPECT_NE_DBL(res, exp_, &status, DBL_e_6, test_expect_ne_dbl_failed, LINE());
+    return status;
+}
+
 int main() {
     int res = 0;
 
-    /* will abort() on fail */
     test_assert_eq_dbl_success();
     test_assert_ne_dbl_passed();
 
@@ -44,6 +57,9 @@ int main() {
     res = test_expect_ne_dbl_passed();
     if (res == 0)
         return 1;
+
+    res = test_expect_ne_dbl_failed();
+    test_assert_ne_dbl_failed();
 
     return 0;
 }
