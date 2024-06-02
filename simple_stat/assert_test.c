@@ -4,7 +4,7 @@
 
 int test_LINE_macro_success() {
     int exp = __LINE__, res = LINE();
-    ASSERT_EQ_INT32(res, exp, LINE());
+    ASSERT_EQ_INT32(res, exp, test_LINE_macro_success, LINE());
     return 0;
 }
 
@@ -12,7 +12,7 @@ int test_LINE_macro_success() {
  * numbers correct. */
 int test_assert_eq_int32() {
     int exp = 10, res = 10;
-    ASSERT_EQ_INT32(res, exp, LINE());
+    ASSERT_EQ_INT32(res, exp, test_assert_eq_int32, LINE());
     return 0;
 }
 
@@ -30,7 +30,7 @@ int test_expect_eq_int32_failed() {
 
 int test_assert_eq_int32_aborted() {
     int exp = 10, res = 0;
-    ASSERT_EQ_INT32(res, exp, LINE());
+    ASSERT_EQ_INT32(res, exp, test_assert_eq_int32_aborted, LINE());
     printf("TEST SHOULD FAILED\n");
     return 1;
 }
