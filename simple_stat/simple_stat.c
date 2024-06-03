@@ -33,7 +33,7 @@ int
 abs_average(int values[], int size, double *abs_avg) {
     int sum = 0, i = 0, abs_value = 0, st = 0;
 
-    if (abs_avg == NULL)
+    if ((abs_avg == NULL) || (values == NULL))
         return NULADR;
 
     if ((size <= 0) || (size > MAX_ARRAY_SIZE))

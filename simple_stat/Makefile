@@ -18,4 +18,4 @@ stat.o: simple_stat.c
 	gcc -g -Wall -Wextra -Werror -Wformat -std=c99 -c simple_stat.c -o stat.o 
 
 clear:
-	rm -rf *.o test_int32* test_dbl*
+	rm -rf *.o test_int32* test_dbl* avg_test
