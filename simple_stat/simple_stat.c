@@ -126,7 +126,7 @@ abs_arraycp(int dest[], const int src[], int size) {
         st = abs_(src[i], &tmp);
 
         if (st != 0)
-            return NOTABS;
+            return st;
 
         dest[i] = tmp;
     }
@@ -139,16 +139,13 @@ median(const int values[], int size, double *median_v, int (*fnc)(const void*, c
     int mid = 0, copied = 0, res = 0;
     int *arr_copy;
 
-    if ((size <= 0) || (size > MAX_ARRAY_SIZE))
-        return INVDIM;
-
     arr_copy = (int *) malloc(size * sizeof(int));
     if (arr_copy == NULL)
         return NULADR;
 
     copied = arraycp(arr_copy, values, size);
     if (copied != size)
-        return NEQUAL;
+        return copied;
 
     qsort(arr_copy, size, sizeof(int), fnc);
 
