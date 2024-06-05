@@ -37,6 +37,50 @@ int test_return_NULADR_on_double() {
     return 0;
 }
 
+int test_return_INVDIM_on_inv_size() {
+    int values[] = {1, 2, 3, 4, 5, 6};
+    double valid_ptr = 0.0;
+    int size = -6;
+    int res = -1;
+
+    res = abs_average(values, size, &valid_ptr);
+    ASSERT_EQ_INT32(res, INVDIM, test_return_INVDIM_on_inv_size, LINE());
+    return 0;
+}
+
+int test_return_INVDIM_on_ovf_size() {
+    int values[] = {1, 2, 3, 4, 5, 6};
+    double valid_ptr = 0.0;
+    int size = MAX_ARRAY_SIZE + 1;
+    int res = -1;
+
+    res = abs_average(values, size, &valid_ptr);
+    ASSERT_EQ_INT32(res, INVDIM, test_return_INVDIM_on_ovf_size, LINE());
+    return 0;
+}
+
+int test_return_GOTOVF() {
+    int values[] = {1, 2, 3, INT32_MAX, 5, 6};
+    double valid_ptr = 0.0;
+    int size = 6;
+    int res = -1;
+
+    res = abs_average(values, size, &valid_ptr);
+    ASSERT_EQ_INT32(res, GOTOVF, test_return_GOTOVF, LINE());
+    return 0;
+}
+
+int test_return_GOTOVF_on_underflow() {
+    int values[] = {1, 2, 3, INT32_MIN, 5, 6};
+    double valid_ptr = 0.0;
+    int size = 6;
+    int res = -1;
+
+    res = abs_average(values, size, &valid_ptr);
+    ASSERT_EQ_INT32(res, GOTOVF, test_return_GOTOVF_on_underflow, LINE());
+    return 0;
+}
+
 int main() {
     int res = -1;
 
@@ -49,6 +93,22 @@ int main() {
         return 1;
 
     res = test_return_NULADR_on_double();
+    if (res != 0)
+        return 1;
+
+    res = test_return_INVDIM_on_inv_size();
+    if (res != 0)
+        return 1;
+
+    res = test_return_INVDIM_on_ovf_size();
+    if (res != 0)
+        return 1;
+
+    res = test_return_GOTOVF();
+    if (res != 0)
+        return 1;
+
+    res = test_return_GOTOVF_on_underflow();
     if (res != 0)
         return 1;
 

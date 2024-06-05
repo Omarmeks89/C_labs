@@ -50,9 +50,6 @@ abs_average(int values[], int size, double *abs_avg) {
         sum += abs_value;
     }
 
-    if (i == 0)
-        return NOITER;
-
     *abs_avg = ((double)sum / (double)i); 
     return SUCCESS;
 }
@@ -93,9 +90,6 @@ average(int values[], int size, double *avg) {
 
         sum += value;
     }
-
-    if (i == 0)
-        return NOITER;
 
     *avg = (double)sum / (double)i; 
     return SUCCESS;
