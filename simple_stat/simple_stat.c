@@ -68,7 +68,7 @@ int
 average(int values[], int size, double *avg) {
     int sum = 0, i = 0, value = 0;
 
-    if (avg == NULL)
+    if ((avg == NULL) || (values == NULL))
         return NULADR;
 
     if ((size <= 0) || (size > MAX_ARRAY_SIZE))

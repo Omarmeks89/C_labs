@@ -11,11 +11,18 @@ double_test: _m_assert.h
 avg_test: stat.o stat_avg_test.o
 	gcc stat.o stat_avg_test.o -o avg_test -lm
 
+avg_test_s: stat.o stat_s_avg_test.o
+	gcc stat.o stat_s_avg_test.o -o avg_test_s -lm
+
+stat_s_avg_test.o: _m_assert.h
+	gcc -g -Wall -Wextra -Werror -Wformat -std=c99 -o stat_s_avg_test.o -c test/test_s_average_func.c
+
 stat_avg_test.o: _m_assert.h
 	gcc -g -Wall -Wextra -Werror -Wformat -std=c99 -o stat_avg_test.o -c test/test_average_func.c
 
+# reuse it
 stat.o: simple_stat.c
 	gcc -g -Wall -Wextra -Werror -Wformat -std=c99 -c simple_stat.c -o stat.o 
 
 clear:
-	rm -rf *.o test_int32* test_dbl* avg_test
+	rm -rf *.o test_int32* test_dbl* avg_test*
