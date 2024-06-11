@@ -100,16 +100,18 @@ arraycp(int dest[], const int src[], int size) {
     int i = 0;
 
     if ((src == NULL) || (dest == NULL))
-        return NULADR;
+        /* NULADR */
+        return -1;
 
     if ((size <= 0) || (size > MAX_ARRAY_SIZE))
-        return INVDIM;
+        /* INVDIM */
+        return -2;
 
     for (i = 0; i < size; i++) {
         dest[i] = src[i];
     }
 
-    return i + 1;
+    return i;
 }
 
 static int
@@ -131,7 +133,7 @@ abs_arraycp(int dest[], const int src[], int size) {
         dest[i] = tmp;
     }
 
-    return i + 1;
+    return i;
 }
 
 int
@@ -144,14 +146,27 @@ median(const int values[], int size, double *median_v, int (*fnc)(const void*, c
         return NULADR;
 
     copied = arraycp(arr_copy, values, size);
-    if (copied != size)
-        return copied;
+    if ((copied != size) && (copied >= 0)) {
+        return NEQUAL;
+    }
+
+    /* separate into func */
+    if (copied < 0) {
+        switch (copied) {
+            case -1:
+                return NULADR;
+            case -2:
+                return INVDIM;
+            default:
+                exit(1);
+        }
+    }
 
     qsort(arr_copy, size, sizeof(int), fnc);
 
     mid = size / 2;
-    if (size % 2) {
-        int _mid[2] = {values[mid], values[mid + 1]};
+    if (!(size % 2)) {
+        int _mid[2] = {values[mid - 1], values[mid]};
 
         res = average(_mid, 2, median_v);
         if (res != SUCCESS)
@@ -191,7 +206,7 @@ abs_median(const int values[], int size, double * median_v) {
     qsort(arr_copy, size, sizeof(int), &_abs_compare);
 
     mid = size / 2;
-    if (size % 2) {
+    if (!(size % 2)) {
         int _mid[2] = {values[mid], values[mid + 1]};
 
         res = abs_average(_mid, 2, median_v);
