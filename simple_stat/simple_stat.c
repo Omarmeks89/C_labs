@@ -60,8 +60,9 @@ _grow(measurements m, int *error) {
     int *_arr = NULL;
     size_t ctrl_size = 0, grown = 0;
 
-    if (error == NULL)
-        return NULL;
+    if (error == NULL) {
+        return m;
+    }
 
     if (m == NULL) {
         *error = NULADR;
@@ -93,8 +94,10 @@ _grow(measurements m, int *error) {
     if (_arr == NULL) {
         *error = NALLOC;
 
-        if (m->len != 0) 
+        if (m->len != 0) { 
             free(m->arr);
+            free_measurements(m);
+        }
 
         return NULL;
     }
