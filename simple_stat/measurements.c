@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "measurements.h"
 #include "err_codes.h"
@@ -10,6 +11,53 @@ struct stat_measurement {
     size_t      cap;
     int         pos;
 };
+
+/* _grow called when we need alloc or realloc memory
+ * for measurements array.
+ *
+ * Params:
+ *  measurements: pointer on measurements struct;
+ *
+ * Return:
+ *  int: err_code. */
+static int
+grow(measurements m) {
+    int *_arr = NULL;
+    size_t ctrl_size = 0, grown = 0;
+
+    if (m == NULL) {
+        return NULADR;
+    }
+
+    if (m->cap == NULL_SIZE) {
+        _arr = (int *) calloc(MIN_GROW, sizeof(int));
+        grown = MIN_GROW;
+    }
+
+    else if (m->cap <= HALF_EXP_GROW) {
+        _arr = (int *) realloc(m->arr, m->cap * 2);
+        grown = m->cap * 2;
+    }
+
+    else if (m->cap >= MAX_EXP_GROW) {
+        ctrl_size = MAX_ARRAY_CAPASITY - MONOTONIC_GROW;
+
+        if (ctrl_size < m->cap) {
+            return INVDIM;
+        }
+
+        _arr = (int *) realloc(m->arr, m->cap + MONOTONIC_GROW);
+        grown = m->cap + MONOTONIC_GROW;
+    }
+
+    if (_arr == NULL) {
+        return NALLOC;
+    }
+
+    m->arr = _arr;
+    m->cap = grown;
+    return SUCCESS;
+}
 
 /* new_measurements create new measurements struct
  * and return pointer.
@@ -57,7 +105,7 @@ free_measurements(measurements m) {
     return SUCCESS;
 }
 
-size_t inline
+size_t
 len(measurements m) {
     return m->len;
 }
@@ -85,49 +133,26 @@ append(measurements m, int value) {
     return SUCCESS;
 }
 
-/* _grow called when we need alloc or realloc memory
- * for measurements array.
- *
- * Params:
- *  measurements: pointer on measurements struct;
- *
- * Return:
- *  int: err_code. */
 int
-grow(measurements m) {
-    int *_arr = NULL;
-    size_t ctrl_size = 0, grown = 0;
-
-    if (m == NULL) {
-        return NULADR;
+get_value(measurements m, int pos) {
+    if ((m == NULL) || (m->pos < pos)) {
+        perror("get_value: nulptr or invalid pos.");
+        abort();
     }
 
-    if (m->cap == NULL_SIZE) {
-        _arr = (int *) calloc(MIN_GROW, sizeof(int));
-        grown = MIN_GROW;
+    return m->arr[pos];
+}
+
+int 
+copy_measurements_array(measurements m, int dest[]) {
+    int i = 0;
+
+    if ((m == NULL) || (dest == NULL))
+        return -1;
+
+    for (i = 0; i < m->len; i++) {
+        dest[i] = m->arr[i];
     }
 
-    else if (m->cap <= HALF_EXP_GROW) {
-        _arr = (int *) realloc(m->arr, m->cap * 2);
-        grown = m->cap * 2;
-    }
-
-    else if (m->cap >= MAX_EXP_GROW) {
-        ctrl_size = MAX_ARRAY_CAPASITY - MONOTONIC_GROW;
-
-        if (ctrl_size < m->cap) {
-            return INVDIM;
-        }
-
-        _arr = (int *) realloc(m->arr, m->cap + MONOTONIC_GROW);
-        grown = m->cap + MONOTONIC_GROW;
-    }
-
-    if (_arr == NULL) {
-        return NALLOC;
-    }
-
-    m->arr = _arr;
-    m->cap = grown;
-    return SUCCESS;
+    return i;
 }

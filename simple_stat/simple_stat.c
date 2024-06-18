@@ -3,9 +3,9 @@
 #include <math.h>
 #include <float.h>
 
-#include "simple_stat.h"
 #include "measurements.h"
 #include "err_codes.h"
+#include "simple_stat.h"
 
 static int
 abs_(int v, int *res) {
@@ -35,8 +35,8 @@ abs_average(measurements m, double *abs_avg) {
     if ((m == NULL) || (abs_avg == NULL))
         return NULADR;
 
-    for (i = 0; i < m->len; i++) {
-        tmp = m->arr[i];
+    for (i = 0; i < len(m); i++) {
+        tmp = get_value(m, i);
         st = abs_(tmp, &abs_value);
 
         if (st != SUCCESS)
@@ -47,6 +47,9 @@ abs_average(measurements m, double *abs_avg) {
 
         sum += abs_value;
     }
+
+    if (i == 0)
+        return NOITER;
 
     *abs_avg = ((double)sum / (double)i); 
     return SUCCESS;
@@ -69,8 +72,9 @@ average(measurements m, double *avg) {
     if ((m == NULL) || (avg == NULL))
         return NULADR;
 
-    for (i = 0; i < m->len; i++) {
-        value = m->arr[i];
+    for (i = 0; i < len(m); i++) {
+        value = get_value(m, i);
+
         if ((sum < 0) && (value < 0)) {
 
             if ((sum + value) > 0)
@@ -86,27 +90,11 @@ average(measurements m, double *avg) {
         sum += value;
     }
 
+    if (i == 0)
+        return NOITER;
+
     *avg = (double)sum / (double)i; 
     return SUCCESS;
-}
-
-static int
-arraycp(int dest[], const int src[], int size) {
-    int i = 0;
-
-    if ((src == NULL) || (dest == NULL))
-        /* NULADR */
-        return -1;
-
-    if ((size <= 0) || (size > MAX_ARRAY_CAPASITY))
-        /* INVDIM */
-        return -2;
-
-    for (i = 0; i < size; i++) {
-        dest[i] = src[i];
-    }
-
-    return i;
 }
 
 static int
@@ -140,47 +128,42 @@ median(measurements m, double *median_v, int (*fnc)(const void*, const void*)) {
     if ((m == NULL) || (median_v == NULL))
         return NULADR;
 
-    arr_copy = (int *) malloc(m->len * sizeof(int));
+    arr_copy = (int *) malloc(len(m) * sizeof(int));
     if (arr_copy == NULL)
         return NULADR;
 
-    copied = arraycp(arr_copy, m->arr, m->len);
-    if ((copied != m->len) && (copied >= 0)) {
+    copied = copy_measurements_array(m, arr_copy);
+    if (copied != len(m)) {
+        free(arr_copy);
         return NEQUAL;
     }
 
-    /* separate into func */
-    if (copied < 0) {
-        switch (copied) {
-            case -1:
-                return NULADR;
-            case -2:
-                return INVDIM;
-            default:
-                exit(1);
-        }
-    }
+    qsort(arr_copy, len(m), sizeof(int), fnc);
 
-    qsort(arr_copy, m->len, sizeof(int), fnc);
-
-    mid = m->len / 2;
-    if (!(m->len % 2)) {
+    mid = len(m) / 2;
+    if (!(len(m) % 2)) {
         int _mid[2] = {arr_copy[mid - 1], arr_copy[mid]};
 
-        /* FIXME: refactor */
-        tmp_m = (measurements) malloc(sizeof(measurements));
-        if (tmp_m == NULL)
+        tmp_m = new_measurements((size_t) 2);
+        if (tmp_m == NULL) {
+            free(arr_copy);
             return NULADR;
+        }
 
-        tmp_m->arr = _mid;
-        tmp_m->len = 2;
+        for (int i = 0; i < len(tmp_m); i++) {
+            res = append(tmp_m, _mid[i]);
+
+            if (res != SUCCESS) {
+                free(arr_copy);
+                return res;
+            }
+        }
 
         res = average(tmp_m, median_v);
-        if (res != SUCCESS)
-            return res;
-
+        free_measurements(tmp_m);
         free(arr_copy);
-        return SUCCESS;
+
+        return res;
     }
 
     *median_v = (double) arr_copy[mid];
