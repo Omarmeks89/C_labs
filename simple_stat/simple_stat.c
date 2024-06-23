@@ -98,30 +98,25 @@ average(measurements m, double *avg) {
 }
 
 static int
-abs_arraycp(int dest[], const int src[], int size) {
-    int i = 0, tmp = 0, st = 0;
+_get_median(int arr[], size_t size, double *md, int (* fnc)(const void *, const void *)) {
+    int mid = -1;
 
-    if ((src == NULL) || (dest == NULL))
-        return NULADR;
+    qsort(arr, size, sizeof(int), fnc);
 
-    if ((size <= 0) || (size > MAX_ARRAY_CAPASITY))
-        return INVDIM;
+    mid = size / 2;
 
-    for (i = 0; i < size; i++) {
-        st = abs_(src[i], &tmp);
-
-        if (st != 0)
-            return st;
-
-        dest[i] = tmp;
+    if ((size > 1) && (size % 2 == 0)) {
+        *md = _AVG_AB(arr[mid - 1], arr[mid]);
+    } else {
+        *md = (double) arr[mid];
     }
 
-    return i;
+    return SUCCESS;
 }
 
 int
 median(measurements m, double *median_v, int (*fnc)(const void*, const void*)) {
-    int mid = 0, copied = 0;
+    int copied = 0, res = -1;
     int *arr_copy;
 
     if ((m == NULL) || (median_v == NULL) || (fnc == NULL))
@@ -140,19 +135,9 @@ median(measurements m, double *median_v, int (*fnc)(const void*, const void*)) {
         return NEQUAL;
     }
 
-    /* TODO: separate */
-    qsort(arr_copy, len(m), sizeof(int), fnc);
-
-    mid = len(m) / 2;
-
-    if ((len(m) > 1) && (len(m) % 2 == 0)) {
-        *median_v = _AVG_AB(arr_copy[mid - 1], arr_copy[mid]);
-    } else {
-        *median_v = (double) arr_copy[mid];
-    }
-
+    res = _get_median(arr_copy, len(m), median_v, fnc);
     free(arr_copy);
-    return SUCCESS;
+    return res;
 }
 
 static inline int
@@ -162,7 +147,7 @@ _abs_compare(const void * a, const void * b) {
 
 int
 abs_median(measurements m, double * median_v) {
-    int mid = 0, i = 0, tmp = 0, abs_value = 0, st = -1;
+    int res = -1, i = 0, tmp = 0, abs_value = 0, st = -1;
     int *arr_copy;
 
     if ((m == NULL) || (median_v == NULL))
@@ -187,25 +172,15 @@ abs_median(measurements m, double * median_v) {
         arr_copy[i] = abs_value;
     }
 
-    /* TODO: separate */
-    qsort(arr_copy, len(m), sizeof(int), &_abs_compare);
-
-    mid = len(m) / 2;
-
-    if ((len(m) > 1) && (len(m) % 2 == 0)) {
-        *median_v = _AVG_AB(arr_copy[mid - 1], arr_copy[mid]);
-    } else {
-        *median_v = (double) arr_copy[mid];
-    }
-
+    res = _get_median(arr_copy, len(m), median_v, &_abs_compare);
     free(arr_copy);
-    return SUCCESS;
+    return res;
 }
 
 int
 dispersion(measurements m, double *dispn) {
     double abs_avg = 0.0, total = 0.0, tmp = 0.0;
-    int res = 0, i = 0;
+    int res = 0, i = 0, _v = -1;
 
     if ((m == NULL) || (dispn == NULL))
         return NULADR;
@@ -215,13 +190,16 @@ dispersion(measurements m, double *dispn) {
         return res;
 
     for (i = 0; i < len(m); i++) {
-        tmp = fabs((double) m->arr[i] - abs_avg);
+        _v = get_value(m, i);
+        tmp = fabs((double) _v - abs_avg);
         tmp = pow(tmp, 2);
+
         if (fabs(DBL_MAX - total) < tmp)
             return GOTOVF;
 
         total += tmp;
     }
+
     if (i == 0)
         return NOITER;
 
