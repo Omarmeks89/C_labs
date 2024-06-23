@@ -22,7 +22,7 @@ typedef struct stat_measurement *measurements;
 measurements new_measurements(size_t cap);
 int append(measurements m, int value);
 int get_value(measurements m, int pos);
-int copy_measurements_array(measurements m, int dest[]);
+size_t copy_measurements_array(measurements m, int dest[]);
 size_t len(measurements m);
 int free_measurements(measurements m);
 

@@ -1,13 +1,5 @@
 build: int_test double_test
 
-int_test: _m_assert.h
-	gcc -g -Wall -Wextra -Werror -Wformat -std=c99 -lm assert_test.c -o test_int32_macro
-
-# test macro for floating point values
-double_test: _m_assert.h
-	gcc -g -Wall -Wextra -Werror -Wformat -std=c99 -lm assert_dbl_test.c -o test_dbl_macro
-
-# link with 'math' needed here, when ld is working
 avg_test: stat.o stat_avg_test.o
 	gcc stat.o stat_avg_test.o -o avg_test -lm
 
