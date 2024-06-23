@@ -43,7 +43,7 @@ grow(measurements m) {
         ctrl_size = MAX_ARRAY_CAPASITY - MONOTONIC_GROW;
 
         if (ctrl_size < m->cap) {
-            return INVDIM;
+            return GOTOVF;
         }
 
         _arr = (int *) realloc(m->arr, m->cap + MONOTONIC_GROW);
@@ -121,7 +121,6 @@ append(measurements m, int value) {
         code = grow(m);
 
         if (code != SUCCESS) {
-            free_measurements(m);
             return code;
         }
     } 

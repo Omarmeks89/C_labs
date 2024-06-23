@@ -15,6 +15,8 @@ extern "C"
 #define INT32_MAX 2147483647
 #define INT32_MIN -2147483648
 
+#define _AVG_AB(a, b) (((double) (a + b)) / 2.0)
+
 int abs_average(measurements m, double * abs_avg);
 int average(measurements m, double * avg);
 int median(measurements m, double * median_v,

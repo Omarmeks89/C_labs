@@ -16,6 +16,7 @@ enum status {
     INVDIM,
     NALLOC,
     NEQUAL,
+    NODATA,                     /* target array is empty, have no elements/ */
 };
 
 #endif /* ERR_CODES_H */

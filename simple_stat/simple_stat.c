@@ -121,12 +121,14 @@ abs_arraycp(int dest[], const int src[], int size) {
 
 int
 median(measurements m, double *median_v, int (*fnc)(const void*, const void*)) {
-    int mid = 0, copied = 0, res = 0;
-    measurements tmp_m;
+    int mid = 0, copied = 0;
     int *arr_copy;
 
-    if ((m == NULL) || (median_v == NULL))
+    if ((m == NULL) || (median_v == NULL) || (fnc == NULL))
         return NULADR;
+
+    if (len(m) == 0)
+        return NODATA;
 
     arr_copy = (int *) malloc(len(m) * sizeof(int));
     if (arr_copy == NULL)
@@ -141,34 +143,14 @@ median(measurements m, double *median_v, int (*fnc)(const void*, const void*)) {
     qsort(arr_copy, len(m), sizeof(int), fnc);
 
     mid = len(m) / 2;
-    if (!(len(m) % 2)) {
-        int _mid[2] = {arr_copy[mid - 1], arr_copy[mid]};
 
-        tmp_m = new_measurements((size_t) 2);
-        if (tmp_m == NULL) {
-            free(arr_copy);
-            return NULADR;
-        }
-
-        for (int i = 0; i < len(tmp_m); i++) {
-            res = append(tmp_m, _mid[i]);
-
-            if (res != SUCCESS) {
-                free(arr_copy);
-                return res;
-            }
-        }
-
-        res = average(tmp_m, median_v);
-        free_measurements(tmp_m);
-        free(arr_copy);
-
-        return res;
+    if ((len(m) > 1) && (len(m) % 2 == 0)) {
+        *median_v = _AVG_AB(arr_copy[mid - 1], arr_copy[mid]);
+    } else {
+        *median_v = (double) arr_copy[mid];
     }
 
-    *median_v = (double) arr_copy[mid];
     free(arr_copy);
-
     return SUCCESS;
 }
 
