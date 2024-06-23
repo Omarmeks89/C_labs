@@ -7,6 +7,16 @@
 #include "err_codes.h"
 #include "simple_stat.h"
 
+/* abs_ convert value x as |x|.
+ *
+ * Params:
+ *  - v:            value for convertation;
+ *  - res:          pointer on variable for result;
+ *
+ * Return:
+ *  - NULADR:       if res is an invalid pointer;
+ *  - GOTOVF:       if v is equal to max int32 value
+ *                  (as INT32_MAX macro). */
 static int
 abs_(int v, int *res) {
     if (res == NULL) 
@@ -16,7 +26,7 @@ abs_(int v, int *res) {
         return GOTOVF;
 
     *res = v > 0 ? v : -v;
-    return 0;
+    return SUCCESS;
 }
 
 /* will calculate average from array of
@@ -24,10 +34,13 @@ abs_(int v, int *res) {
  * Is working with values in between (0, 2147483647).
  *
  * Params:
- *      int *values: array of values;
- *      int size: size of array (will use control value).
+ *  - m:            pointer on measurements struct;
+ *  - abs_avg:      pointer on double64 value for result;
+ *
  * Returns:
- *      double: abs average. */
+ *  - NULADR:       if invalid pointers detected;
+ *  - NOITER:       if we got empty measurements struct;
+ *  - GOTOVF:       on accumulator overflow. */
 int
 abs_average(measurements m, double *abs_avg) {
     int sum = 0, i = 0, abs_value = 0, st = 0, tmp = -1;
@@ -55,16 +68,19 @@ abs_average(measurements m, double *abs_avg) {
     return SUCCESS;
 }
 
-/* will calculate average from array of
+/* average from array of
  * int. For calculation average with negative
  * values.
  * Is working with values (-2147483648, 2147483647)
  *
  * Params:
- *      int *values: array of values;
- *      int size: size of array (will use control value).
+ *  - m:            pointer on measurements struct;
+ *  - avg:          pointer on double64 value for result;
+ *
  * Returns:
- *      double: average. */
+ *  - NULADR:       if invalid pointers detected;
+ *  - NOITER:       if we got empty measurements struct;
+ *  - GOTOVF:       on accumulator overflow or underflow. */
 int
 average(measurements m, double *avg) {
     int sum = 0, i = 0, value = 0;
@@ -97,6 +113,16 @@ average(measurements m, double *avg) {
     return SUCCESS;
 }
 
+/* _get_median calculate median from array of values.
+ *
+ * Params:
+ *  - arr:          pointer on empty array of int;
+ *  - size:         size of allocated array;
+ *  - md:           pointer on double64 value for result;
+ *  - fnc:          pointer on fuction for 'qsort';
+ *
+ * Return:
+ *  -               function is always successfull. */
 static int
 _get_median(int arr[], size_t size, double *md, int (* fnc)(const void *, const void *)) {
     int mid = -1;
