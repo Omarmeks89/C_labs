@@ -140,6 +140,7 @@ median(measurements m, double *median_v, int (*fnc)(const void*, const void*)) {
         return NEQUAL;
     }
 
+    /* TODO: separate */
     qsort(arr_copy, len(m), sizeof(int), fnc);
 
     mid = len(m) / 2;
@@ -161,46 +162,43 @@ _abs_compare(const void * a, const void * b) {
 
 int
 abs_median(measurements m, double * median_v) {
-    int mid = 0, copied = 0, res = 0;
-    measurements tmp_m;
+    int mid = 0, i = 0, tmp = 0, abs_value = 0, st = -1;
     int *arr_copy;
 
     if ((m == NULL) || (median_v == NULL))
         return NULADR;
 
-    arr_copy = (int *) malloc(m->len * sizeof(int));
+    if (len(m) == 0)
+        return NODATA;
+
+    arr_copy = (int *) malloc(len(m) * sizeof(int));
     if (arr_copy == NULL)
         return NULADR;
 
-    copied = abs_arraycp(arr_copy, m->arr, m->len);
-    if (copied != m->len)
-        return NEQUAL;
+    for (i = 0; i < len(m); i++) {
+        tmp = get_value(m, i);
+        st = abs_(tmp, &abs_value);
 
-    qsort(arr_copy, m->len, sizeof(int), &_abs_compare);
+        if (st != SUCCESS) {
+            free(arr_copy);
+            return st;
+        }
 
-    mid = m->len / 2;
-    if (!(m->len % 2)) {
-        int _mid[2] = {arr_copy[mid], arr_copy[mid + 1]};
-
-        /* FIXME: refactor */
-        tmp_m = (measurements) malloc(sizeof(measurements));
-        if (tmp_m == NULL)
-            return NULADR;
-
-        tmp_m->arr = _mid;
-        tmp_m->len = 2;
-
-        res = abs_average(tmp_m, median_v);
-        if (res != SUCCESS)
-            return res;
-
-        free(arr_copy);
-        return SUCCESS;
+        arr_copy[i] = abs_value;
     }
 
-    *median_v = (double) arr_copy[mid];
-    free(arr_copy);
+    /* TODO: separate */
+    qsort(arr_copy, len(m), sizeof(int), &_abs_compare);
 
+    mid = len(m) / 2;
+
+    if ((len(m) > 1) && (len(m) % 2 == 0)) {
+        *median_v = _AVG_AB(arr_copy[mid - 1], arr_copy[mid]);
+    } else {
+        *median_v = (double) arr_copy[mid];
+    }
+
+    free(arr_copy);
     return SUCCESS;
 }
 
@@ -216,7 +214,7 @@ dispersion(measurements m, double *dispn) {
     if (res != SUCCESS)
         return res;
 
-    for (i = 0; i < m->len; i++) {
+    for (i = 0; i < len(m); i++) {
         tmp = fabs((double) m->arr[i] - abs_avg);
         tmp = pow(tmp, 2);
         if (fabs(DBL_MAX - total) < tmp)
@@ -227,6 +225,6 @@ dispersion(measurements m, double *dispn) {
     if (i == 0)
         return NOITER;
 
-    *dispn = total / (double) m->len;
+    *dispn = total / (double) len(m);
     return SUCCESS;
 }
