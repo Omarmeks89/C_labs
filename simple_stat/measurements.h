@@ -17,6 +17,8 @@ extern "C"
 #define HALF_MAX_EXP_GROW                   (size_t) 512
 #define MAX_EXP_GROW                        (size_t) 1024
 
+#define ARR_OVF_BORDER                      (size_t) 524159
+
 typedef struct stat_measurement *measurements;
 
 measurements new_measurements(size_t cap);

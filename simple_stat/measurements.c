@@ -27,7 +27,7 @@ struct stat_measurement {
 static int
 grow(measurements m) {
     int *_arr = NULL;
-    size_t ctrl_size = 0, tmp = 0;
+    size_t tmp = 0;
 
     if (m == NULL) {
         return NULADR;
@@ -40,8 +40,9 @@ grow(measurements m) {
 
     else if (m->cap < MAX_EXP_GROW) {
 
-        if (m->cap <= (MAX_EXP_GROW - HALF_MAX_EXP_GROW))
+        if (m->cap <= HALF_MAX_EXP_GROW)
             tmp = m->cap * 2;
+
         else
             tmp = m->cap + (MAX_EXP_GROW - m->cap);
 
@@ -50,9 +51,8 @@ grow(measurements m) {
     }
 
     else if (m->cap >= MAX_EXP_GROW) {
-        ctrl_size = MAX_ARRAY_CAPASITY - MONOTONIC_GROW;
 
-        if (ctrl_size < m->cap) {
+        if (ARR_OVF_BORDER < m->cap) {
             return GOTOVF;
         }
 
@@ -67,6 +67,15 @@ grow(measurements m) {
 
     m->arr = _arr;
     return SUCCESS;
+}
+
+static int
+round_to_multiples_of_4(int num) {
+    if (num < 4)
+        return 4;
+
+    num = (num + ((int) (num / 2) | (int) (num % 4)));
+    return num - (num % 4);
 }
 
 /* new_measurements create new measurements struct
@@ -92,6 +101,7 @@ new_measurements(size_t cap) {
     }
 
     if (cap != 0) {
+        cap = round_to_multiples_of_4(cap);
         m->arr = (int *) calloc(cap, sizeof(int));
 
         if (m->arr == NULL) {
