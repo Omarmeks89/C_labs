@@ -13,9 +13,9 @@ extern "C"
 
 #define NULL_SIZE                           (size_t) 0
 #define MIN_GROW                            (size_t) 8
-#define HALF_EXP_GROW                       (size_t) 1024
-#define MAX_EXP_GROW                        (size_t) 2048
-#define MONOTONIC_GROW                      (size_t) 512
+#define MONOTONIC_GROW                      (size_t) 128
+#define HALF_MAX_EXP_GROW                   (size_t) 512
+#define MAX_EXP_GROW                        (size_t) 1024
 
 typedef struct stat_measurement *measurements;
 

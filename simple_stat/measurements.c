@@ -27,7 +27,7 @@ struct stat_measurement {
 static int
 grow(measurements m) {
     int *_arr = NULL;
-    size_t ctrl_size = 0, grown = 0;
+    size_t ctrl_size = 0, tmp = 0;
 
     if (m == NULL) {
         return NULADR;
@@ -35,12 +35,18 @@ grow(measurements m) {
 
     if (m->cap == NULL_SIZE) {
         _arr = (int *) calloc(MIN_GROW, sizeof(int));
-        grown = MIN_GROW;
+        m->cap = MIN_GROW;
     }
 
-    else if (m->cap <= HALF_EXP_GROW) {
-        _arr = (int *) realloc(m->arr, m->cap * 2);
-        grown = m->cap * 2;
+    else if (m->cap < MAX_EXP_GROW) {
+
+        if (m->cap <= (MAX_EXP_GROW - HALF_MAX_EXP_GROW))
+            tmp = m->cap * 2;
+        else
+            tmp = m->cap + (MAX_EXP_GROW - m->cap);
+
+        _arr = (int *) realloc(m->arr, tmp);
+        m->cap = tmp;
     }
 
     else if (m->cap >= MAX_EXP_GROW) {
@@ -50,8 +56,9 @@ grow(measurements m) {
             return GOTOVF;
         }
 
-        _arr = (int *) realloc(m->arr, m->cap + MONOTONIC_GROW);
-        grown = m->cap + MONOTONIC_GROW;
+        tmp = m->cap + MONOTONIC_GROW;
+        _arr = (int *) realloc(m->arr, tmp);
+        m->cap = tmp;
     }
 
     if (_arr == NULL) {
@@ -59,7 +66,6 @@ grow(measurements m) {
     }
 
     m->arr = _arr;
-    m->cap = grown;
     return SUCCESS;
 }
 
@@ -76,7 +82,7 @@ measurements
 new_measurements(size_t cap) {
     measurements m;
 
-    if (cap > MAX_ARRAY_CAPASITY) {
+    if ((cap > MAX_ARRAY_CAPASITY) || (cap < 0)){
         return NULL;
     }
 
@@ -85,10 +91,13 @@ new_measurements(size_t cap) {
         abort();
     }
 
-    m->arr = (int *) calloc(cap, sizeof(int));
-    if (m->arr == NULL) {
-        free(m);
-        abort();
+    if (cap != 0) {
+        m->arr = (int *) calloc(cap, sizeof(int));
+
+        if (m->arr == NULL) {
+            free(m);
+            abort();
+        }
     }
 
     m->len = 0;
@@ -160,13 +169,12 @@ append(measurements m, int value) {
 
     m->arr[m->pos] = value;
     m->len++;
-    m->cap++;
 
     return SUCCESS;
 }
 
 /* get_value return value by wished position.
- * If osition is invalid will return error.
+ * If position is invalid will abort execution.
  *
  * Params:
  *  - m:            pointer on measurements struct;
